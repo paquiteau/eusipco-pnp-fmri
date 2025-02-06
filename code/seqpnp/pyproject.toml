@@ -1,0 +1,59 @@
+[project]
+name="benchmark-snake-pnp"
+readme = "README.md" # Optional
+requires-python = ">=3.10"
+dynamic = ["version"]
+license = {file = "LICENSE.txt"}
+keywords = ["simulation", "fMRI", "pnp"]
+authors = [
+  {name = "Pierre-Antoine Comby", email = "pierre-antoine.comby@cea.fr" } # Optional
+]
+
+# Classifiers help users find your project by categorizing it.
+#
+# For a list of valid classifiers, see https://pypi.org/classifiers/
+classifiers = [  # Optional
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 3 - Alpha",
+
+  # Indicate who your project is intended for
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+
+  # Specify the Python versions you support here. In particular, ensure
+  # that you indicate you support Python 3. These classifiers are *not*
+  # checked by "pip install". See instead "python_requires" below.
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [ # Optional
+"snake-fmri",
+"deepinv",
+"mri-nuff[cufinufft]",
+]
+
+[tool.black]
+[tool.ruff]
+
+
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "Q", "D", "UP", "ANN"]
+ignore = [
+    "ANN101", # missing type annotation for self
+    "ANN102", # missing type annotation for cls in classmethod.
+    "ANN204", # missing return type for __init__
+    "ANN401",
+    "D105", # missing docstring in magic method
+    "D404", # Imperative mode is not necessary everywhere, trust me.
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+

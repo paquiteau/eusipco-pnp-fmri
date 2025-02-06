@@ -1,0 +1,68 @@
+.DS_Store
+.idea
+*.log
+tmp/
+
+venv/
+**/*.pdf
+*.tar.gz
+
+__pycache__/
+*.py[cod]
+*$py.class
+.idea/
+# C extensions
+*.so
+.ruff_cache/
+.ropeproject/
+*.egg-info
+
+.ipynb_checkpoints/*
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+
+## Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+### LaTeX ###
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.tdo
+
+code/weights/*.pth

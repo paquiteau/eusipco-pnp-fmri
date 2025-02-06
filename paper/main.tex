@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage{spconf}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[table,dvipsnames,x11names]{xcolor}
+\usepackage{stfloats}
+\usepackage[
+    colorlinks=true,         % false: boxed links; true: colored links
+    linkcolor=MidnightBlue, % color of internal links
+    citecolor=OliveGreen,    % color of links to bibliography
+    filecolor=magenta,       % color of file links
+    urlcolor=BlueViolet      % color of external links
+]{hyperref}
+\usepackage[skip=5pt]{caption}
+\captionsetup{belowskip=-15pt}
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=14pt}
+\usepackage{hyperref}
+\usepackage[capitalize, nameinlink]{cleveref}
+\usepackage{bm}
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs}
+\usepackage{multirow}   % For multirow functionality in tables
+\SetTblrStyle{caption}{hang=0pt,halign=j}
+
+\usepackage[backend=bibtex,
+sorting=none,
+doi=false,
+url=false,
+isbn=false,
+style=ieee,
+]{biblatex}
+\usepackage[range-units=single]{siunitx}
+\setlength{\intextsep}{10pt}
+
+\usepackage{lipsum}
+\setlength{\marginparwidth}{2cm}
+\newlength{\colwidth}
+\usepackage{soul}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\newtheorem{remark}{Remark}
+\newtheorem{defn}{Definition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{example}{Example}
+\newtheorem{prop}{Proposition}
+
+\newcommand{\Given}[1]{\State{\bf given} {#1}}
+\newcommand{\Output}[1]{\State{\bf output} {#1}}
+\newcommand{\Func}[2]{\Block{{\bf function} \textsc{#1}}\(\big(\)#2\(\big)\)}
+\newcommand{\EndFunc}[1]{\EndBlock{{\bf return} #1}}
+\newcommand{\FuncCall}[2]{\textsc{#1}\(\big(\)#2\(\big)\)}
+\newcommand{\RepeatFor}[1]{\Repeat {\bf~for} {#1}}
+\renewcommand{\EndFor}{\EndBlock{\bf end for}}
+\newcommand{\ParForD}[2]{\Block{{#1} {\bf distribute} {#2} {\bf and do in parallel}}}
+\newcommand{\EndParForD}[1]{\EndBlock{\bf end and gather} {#1}}
+\newcommand{\ParFor}[1]{\Block{{#1} \bf do~in~parallel}}
+\newcommand{\EndParFor}{\EndBlock{\bf end}}
+\newcommand{\Set}[1]{\Block{{#1} \bf set}}
+\newcommand{\EndSet}{\EndBlock{\bf end}}
+\setlength{\marginparwidth}{14mm}
+\newcommand{\todocite}[1]{\todo[color=green!40]{ #1}}
+
+% GUIDELINES
+% https://biomedicalimaging.org/2025/contributors/4-page-paper-guidelines/?_hsmi=321053052
+
+\usepackage{xfrac}
+\usepackage{bm}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\vertiii}{\vert\!\vert\!\vert}
+\renewcommand{\st}{\quad\mathrm{s.t}\quad}
+\newcommand{\prox}{\operatorname{prox}}
+
+\title{TBD  Plug-and-Play for fMRI}
+\name{Pierre-Antoine Comby\(^{\star \dagger}\) \qquad Matthieu Terris\(^{\dagger}\) \qquad Philippe Ciuciu\(^{\star \dagger}\)}
+
+\address{
+\(^{\star}\)CEA, Joliot, NeuroSpin, Universit\'e Paris-Saclay, F-91191 Gif-sur-Yvette, France \\
+\(^{\dagger}\)Inria, MIND, Universit\'e Paris-Saclay, F-91120 Palaiseau, France\\
+}
+\begin{document}
+\ninept
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+\begin{keywords}
+fMRI; Plug-and-Play; Compressed Sensing
+\end{keywords}
+
+\section{Introduction}
+
+\section{Compliance with Ethical Standards}
+This is a numerical simulation study for which no ethical approval was required.
+\section{Acknowledgments}
+This work was granted access to IDRIS' HPC resources under the allocation 2023 AD011011153R3 made by GENCI. The authors have no relevant financial or non-financial interests to disclose.
+\printbibliography
+\end{document}
+
+% IEEE template
