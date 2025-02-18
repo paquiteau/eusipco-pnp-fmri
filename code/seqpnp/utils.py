@@ -5,36 +5,19 @@ import numpy as np
 
 from deepinv.optim.data_fidelity import L2
 from deepinv.optim.optim_iterators.hqs import gStepHQS
+from deepinv.optim.optim_iterators.pgd import gStepPGD, fStepPGD
 from deepinv.optim.optim_iterators import OptimIterator, fStep
 
 from deepinv.optim.utils import conjugate_gradient
 
 
 def get_custom_init(y, physics):
-
     density = physics.nufft.pipe(max_iter=20)
 
     return physics.nufft.A_adjoint(density * y)
 
 
-class Denoiser(torch.nn.Module):
-    """Denoiser to wrap DRUNET for Complex data."""
-
-    def __init__(self, denoiser):
-        super().__init__()
-        self.denoiser = denoiser
-
-    def forward(self, x, sigma, norm=True):
-        x = torch.permute(torch.view_as_real(x.squeeze(0)), (0, 3, 1, 2)).to("cuda")
-        if norm:
-            x = x * 1e4
-        x_ = torch.permute(self.denoiser(x, sigma).to("cpu"), (0, 2, 3, 1))
-        if norm:
-            x_ = x_ * 1e-4
-        return torch.view_as_complex(x_.contiguous()).unsqueeze(0)
-
-
-def get_DPIR_params(sigma=1, xi=1, lamb=2, stepsize=1, n_iter=10):
+def get_DPIR_params(sigma=1, xi=1, lamb=2, stepsize=1, lipschitz_cst=1.0, n_iter=10):
     r"""
     Default parameters for the DPIR Plug-and-Play algorithm.
 
@@ -43,6 +26,8 @@ def get_DPIR_params(sigma=1, xi=1, lamb=2, stepsize=1, n_iter=10):
     # sigma_denoiser = np.logspace(np.log10(s1), np.log10(s2), n_iter).astype(np.float32)
     # sigma_denoiser = np.linspace(s1, s2, n_iter).astype(np.float32)
     # stepsize = (sigma_denoiser / max(1e-6, s2)) ** 2
+    if isinstance(stepsize, str):
+        stepsize = eval(stepsize)
     sigma_denoiser = (sigma * xi ** np.arange(n_iter)).astype(np.float32)
     stepsize = np.ones_like(sigma_denoiser) * stepsize
     # return {"lambda": lamb, "g_param": list(sigma_denoiser), "stepsize": list(stepsize)}
@@ -78,7 +63,7 @@ class PreconditionedHQSIteration(OptimIterator):
         self.g_step = gStepHQS(**kwargs)
         self.f_step = fStepHQSPrecond(**kwargs)
         self.requires_prox_g = True
-        self.precond = precond
+        self.precond = Precond(precond)
 
     def forward(self, X, cur_data_fidelity, cur_prior, cur_params, y, physics):
         r"""
@@ -256,7 +241,7 @@ class Precond:
         return grad_f_preconditioned
 
 
-class PreconditionedPnPI(OptimIterator):
+class PreconditionedPnPIteration(OptimIterator):
     """Implement the preconditioned PnP algorithm from Hong et al. 2024."""
 
     def __init__(self, preconditioner="dynamic", **kwargs):

@@ -5,3 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
+
+[tool.basedpyright]
+
+typeCheckingMode = "basic"
+
+[dependency-groups]
+dev = [
+    "ipython>=8.32.0",
+]

@@ -1,5 +1,8 @@
+from __future__ import annotations
+from pathlib import Path
 import torch
 import torch.nn as nn
+import numpy as np
 
 from deepinv.models.utils import get_weights_url, test_onesplit, test_pad
 
@@ -7,12 +10,14 @@ cuda = True if torch.cuda.is_available() else False
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 
-def load_drunet_mri(filename, device="cpu"):
+def load_drunet_mri(
+    filename: Path | str, device="cpu", dim=3, norm_factor=1.0
+) -> ComplexDenoiser:
     drunet = DRUNet(in_channels=2, out_channels=2, dim=dim, pretrained=None)
-    state_dict = torch.load(filename)
+    state_dict = torch.load(filename, weights_only=True)
     drunet.load_state_dict(state_dict)
     drunet = drunet.to(device)
-    return ComplexDenoiser(drunet)
+    return ComplexDenoiser(drunet, norm_factor=norm_factor).to(device)
 
 
 class DRUNet(nn.Module):
@@ -392,7 +397,7 @@ def conv(
         elif t == "A":
             L.append(nn.AvgPool2d(kernel_size=kernel_size, stride=stride, padding=0))
         else:
-            raise NotImplementedError("Undefined type: ".format(t))
+            raise NotImplementedError("Undefined type: ")
     return sequential(*L)
 
 
@@ -705,7 +710,7 @@ def update_keyvals(old_ckpt, new_ckpt):
     # new_ckpt = {}
     for old_key, old_value in old_ckpt.items():
         new_value = new_ckpt[old_key]
-        if not "head" in old_key and not "tail" in old_key:
+        if "head" not in old_key and "tail" not in old_key:
             for _ in range(new_value.shape[-1]):
                 new_value[..., _] = old_value / new_value.shape[-1]
             new_ckpt[old_key] = new_value
@@ -743,18 +748,39 @@ def update_keyvals(old_ckpt, new_ckpt):
     return new_ckpt
 
 
+def test_pad(model, L, modulo=16, sigma: float = 0.0):
+    """
+    Pads the image to fit the model's expected image size.
+
+    Code borrowed from Kai Zhang https://github.com/cszn/DPIR/tree/master/models
+    """
+    d, h, w = L.size()[-3:]
+    padding_bottom = int(np.ceil(h / modulo) * modulo - h)
+    padding_right = int(np.ceil(w / modulo) * modulo - w)
+    padding_depth = int(np.ceil(d / modulo) * modulo - d)
+    L = torch.nn.ReplicationPad3d(
+        (0, padding_depth, 0, padding_right, 0, padding_bottom)
+    )(L)
+    E = model(L, sigma)
+    E = E[..., :d, :h, :w]
+    return E
+
+
 class ComplexDenoiser(torch.nn.Module):
     """Denoiser to wrap DRUNET for Complex data, In 3D."""
 
-    def __init__(self, denoiser):
+    def __init__(self, denoiser, norm_factor=1):
         super().__init__()
         self.denoiser = denoiser
+        self.norm_factor = norm_factor
 
     def forward(self, x, sigma, norm=True):
-        x = torch.permute(torch.view_as_real(x.squeeze(0)), (0, 4, 1, 2, 3)).to("cuda")
-        if norm:
-            x = x * 1e4
-        x_ = torch.permute(self.denoiser(x, sigma).to("cpu"), (0, 2, 3, 4, 1))
-        if norm:
-            x_ = x_ * 1e-4
+        x = torch.permute(torch.view_as_real(x.squeeze(0)), (0, 4, 1, 2, 3)).to(
+            x.device
+        )
+        x = x * self.norm_factor
+        x_ = torch.permute(
+            test_pad(self.denoiser, L=x, sigma=sigma).to(x.device), (0, 2, 3, 4, 1)
+        )
+        x_ = x_ / self.norm_factor
         return torch.view_as_complex(x_.contiguous()).unsqueeze(0)
