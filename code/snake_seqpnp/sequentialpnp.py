@@ -76,6 +76,10 @@ class SequentialPnPReconstructor(BaseReconstructor):
     dpir_params: dict[str, float] = field(default_factory=dict)
     norm_factor: float = 1
 
+    def __str__(self) -> str:
+        """Return a string representation of the reconstructor."""
+        return f"{self.__reconstructor_name__}-{self.optimizer}"
+
     def setup(
         self, sim_conf: SimConfig | None = None, shape: tuple[int, ...] | None = None
     ) -> None:
