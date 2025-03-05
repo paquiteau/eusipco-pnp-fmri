@@ -755,11 +755,11 @@ def test_pad(model, L, modulo=16, sigma: float = 0.0):
     Code borrowed from Kai Zhang https://github.com/cszn/DPIR/tree/master/models
     """
     d, h, w = L.size()[-3:]
-    padding_bottom = int(np.ceil(h / modulo) * modulo - h)
-    padding_right = int(np.ceil(w / modulo) * modulo - w)
-    padding_depth = int(np.ceil(d / modulo) * modulo - d)
+    padding_d = int(np.ceil(d / modulo) * modulo - d)
+    padding_h = int(np.ceil(h / modulo) * modulo - h)
+    padding_w = int(np.ceil(w / modulo) * modulo - w)
     L = torch.nn.ReplicationPad3d(
-        (0, padding_depth, 0, padding_right, 0, padding_bottom)
+        (0, padding_d, 0, padding_h, 0, padding_w)
     )(L)
     E = model(L, sigma)
     E = E[..., :d, :h, :w]

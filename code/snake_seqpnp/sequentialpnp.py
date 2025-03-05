@@ -106,7 +106,7 @@ class SequentialPnPReconstructor(BaseReconstructor):
         )
 
     def reconstruct(
-        self, data_loader: NonCartesianFrameDataLoader
+        self, data_loader: NonCartesianFrameDataLoader, constant=True,
     ) -> NDArray[np.complex64] | tuple[NDArray[np.complex64], list]:
         """Reconstruct using PnP method."""
         self.setup(shape=data_loader.shape)
@@ -129,8 +129,13 @@ class SequentialPnPReconstructor(BaseReconstructor):
                 smaps=data_loader.get_smaps(),
                 backend=self.nufft_backend,
             ).to(self.device)
+            if constant:
+                lipchitz_cst = physics.nufft.get_lipschitz_cst(max_iter=100)
+                print("lipschitz_cst", lipchitz_cst)
             for i, traj, data in data_loader.iter_frames():
                 physics.nufft.samples = traj
+                if not constant:
+                    lipchitz_cst = physics.nufft.get_lipschitz_cst(max_iter=100)
 
                 data_torch = torch.from_numpy(data).to(self.device)
                 extra_kwargs_optim = {
@@ -139,11 +144,12 @@ class SequentialPnPReconstructor(BaseReconstructor):
                     ),
                     "params_algo": get_DPIR_params(
                         **self.dpir_params,
-                        lipschitz_cst=physics.nufft.get_lipschitz_cst(),
+                        lipschitz_cst=lipchitz_cst,
                         n_iter=self.max_iter_per_frame,
                     ),
                 }
                 optim: BaseOptim = self.init_optim(**extra_kwargs_optim).to(self.device)
+                optim.fixed_point.show_progress_bar = True
                 x_est = optim(
                     data_torch, physics=physics, compute_metrics=self.compute_metrics
                 )
@@ -164,6 +170,7 @@ def get_custom_init(
     data: torch.Tensor,
     device: str,
 ):
+    """Get the custom initialization function."""
     if isinstance(x_init, np.ndarray):
         x_init = torch.from_numpy(x_init).to(device)
     elif "adjoint-" in x_init:

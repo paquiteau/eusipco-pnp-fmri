@@ -106,6 +106,7 @@ class fStepHQSPrecond(fStep):
     def __init__(self, **kwargs):
         super(fStepHQSPrecond, self).__init__(**kwargs)
         self.metric = L2()
+        self._init_prox = None
 
     def forward(self, x, cur_data_fidelity, cur_params, y, physics, precond=None):
         r"""
@@ -161,7 +162,8 @@ class fStepHQSPrecond(fStep):
                     x,
                 )
 
-        x = conjugate_gradient(H, b, max_iter, tol)
+        x = conjugate_gradient(H, b, init=self._init_prox, max_iter=max_iter, tol=tol)
+        self._init_prox = x.detach().clone()
         return x
 
 
@@ -257,7 +259,11 @@ class PreconditionedPnPIteration(OptimIterator):
         self.preconditioner = Precond(preconditioner)
 
     def forward(self, X, cur_data_fidelity, cur_prior, cur_params, y, physics):
-        x_prev, x_prev_prev, grad_f_prev = X["est"]
+        try:
+            x_prev, x_prev_prev, grad_f_prev = X["est"]
+        except ValueError:
+            x_prev, grad_f_prev = X["est"]
+            x_prev_prev = x_prev.clone() # bootstrap
         k = 0 if "it" not in X else X["it"]
 
         # TODO add the preconditioner step
