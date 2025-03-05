@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Callable, ClassVar, Literal
 
 import numpy as np
-from seqpnp import physic
 import torch
 from deepinv.optim.data_fidelity import L2
 from deepinv.optim.optim_iterators import OptimIterator
@@ -20,9 +19,9 @@ from snake.core import SimConfig
 from snake.mrd_utils import NonCartesianFrameDataLoader
 from snake.toolkit.reconstructors import BaseReconstructor
 
-from seqpnp.drunet import load_drunet_mri
-from seqpnp.physic import Nufft
-from seqpnp.utils import (
+from .drunet import load_drunet_mri
+from .physic import Nufft
+from .utils import (
     PreconditionedHQSIteration,
     PreconditionedPnPIteration,
     get_DPIR_params,
@@ -68,12 +67,12 @@ class SequentialPnPReconstructor(BaseReconstructor):
 
     model_weights: str | Path = ""
     nufft_backend: str = "stacked-cufinufft"
-    density_compensation: str | bool = "voronoi"
+    density_compensation: str | None | bool = "voronoi"
     optimizer: str = "hqs-f1"
     max_iter_per_frame: int = 50
     device: str = "cuda"
     compute_metrics: bool = False
-    x_init: torch.Tensor | NDArray | str = "adjoint"
+    x_init: str = "adjoint"
     dpir_params: dict[str, float] = field(default_factory=dict)
     norm_factor: float = 1
 
@@ -106,7 +105,9 @@ class SequentialPnPReconstructor(BaseReconstructor):
         )
 
     def reconstruct(
-        self, data_loader: NonCartesianFrameDataLoader, constant=True,
+        self,
+        data_loader: NonCartesianFrameDataLoader,
+        constant=True,
     ) -> NDArray[np.complex64] | tuple[NDArray[np.complex64], list]:
         """Reconstruct using PnP method."""
         self.setup(shape=data_loader.shape)
